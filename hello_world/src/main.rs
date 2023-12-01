@@ -28,7 +28,7 @@ fn main() {
     
     scalar::run();
     compound::run();
-    user_defined::run();
+    user_defined::run2();
     println!("The product is {}", multiplier(&[4,5,-6,9]));
     
     /* println!("{},{}", scalar::boolean().0, scalar::boolean().1);

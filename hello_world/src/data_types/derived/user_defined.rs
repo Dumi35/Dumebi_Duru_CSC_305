@@ -50,7 +50,7 @@ pub enum Gender { //Enumerate Gender
     Male,
     Female,
 }
-
+// Hello
 #[derive(Debug)] //Decorate the struct Person. Debug is an inbuilt trait. This statement will provoke impl Debug for Person; Metaprogramming
 struct Person {
     name: String,

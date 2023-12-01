@@ -1,12 +1,13 @@
 #![allow(dead_code)]
-use crate::data_types::derived;
+//use crate::data_types::derived;
 
+const PI_VALUE: f32 = std::f32::consts::PI;
 /* struct Person{
         name: String,
         age: u32    
 } */
 union Student{
-        matricNo: [char; 8],
+        matric_no: [char; 8],
         age: u32  
 }
 
@@ -137,14 +138,12 @@ pub fn run1() {
 //We are designing Shape below for the purpose of 
 //specifying all expected functions and methods in any struct that implements Shape.
 trait Shape {
-    fn new(length: i32, width: i32, name: &'static str) -> Self;
-    fn area(&self) -> i32;
-    fn set_length(&mut self, length: i32);
-    fn get_length(&self) -> i32;
-    fn set_width(&mut self, width: i32);
-    fn get_width(&self) -> i32;
+    type ConcreteShape; // associated type declaration that will allow each shape have diff. parameters when instatntiating
+    fn area(&self) -> f32;
     fn set_name(&mut self, name: &'static str);
     fn get_name(&self) -> &str;
+    fn perimeter(&self)-> f32;
+    fn new(shape_data: Self::ConcreteShape) -> Self; //the concrete type that Shape trait is associated with
 }
 //The use of 'static lifetime above ensures that our
 //compiler is clear about the availability of those values, as they are borrowed.
@@ -153,50 +152,56 @@ trait Shape {
 ///Use Default to specify the availability of default instance creation without values passed for property
 #[derive(Default, Debug, Clone)]
 struct Rect {
-    length: i32,
-    width: i32,
+    length: f32,
+    width: f32,
     name: &'static str,
 }
 
-impl Rect {
+impl Rect {  //define default methods that will be available for only rectangles
     //default default() function. Will override derived default if any. 
     fn default() -> Self {
         Rect {
-            length: 1,
-            width: 1,
-            name: "default_name",
+            length: 1.0,
+            width: 1.0,
+            name: "default_rect_name",
         }
+    }
+
+    fn set_length(&mut self, length: f32) {
+        self.length = length;
+    }
+
+    fn get_length(&self) -> f32 {
+        self.length
+    }
+
+    fn set_width(&mut self, width: f32) {
+        self.width = width;
+    }
+
+    fn get_width(&self) -> f32 {
+        self.width
     }
 }
 
 impl Shape for Rect {
     //Associated function used to create a new Shape
-    fn new(length: i32, width: i32, name: &'static str) -> Self {
-        Rect {
-            length,
-            width,
-            name,
+    type ConcreteShape = (f32, f32, & 'static str); //will be used to define that rect has length, breadth, and name
+
+    fn new(dimensions: (f32, f32,& 'static str)) -> Self { //used to instantiate a rect with unique values other than the default
+        Rect{
+            length: dimensions.0,
+            width: dimensions.1,
+            name: dimensions.2,
         }
     }
 
-    fn area(&self) -> i32 {
+    fn area(&self) -> f32 {
         self.length * self.width
     }
 
-    fn set_length(&mut self, length: i32) {
-        self.length = length;
-    }
-
-    fn get_length(&self) -> i32 {
-        self.length
-    }
-
-    fn set_width(&mut self, width: i32) {
-        self.width = width;
-    }
-
-    fn get_width(&self) -> i32 {
-        self.width
+    fn perimeter(&self)-> f32 {
+        2.0 * (self.length + self.width)
     }
 
     fn set_name(&mut self, name: &'static str) {
@@ -206,6 +211,7 @@ impl Shape for Rect {
     fn get_name(&self) -> &str {
         self.name
     }
+
 }
 
 //implement Partial Eq
@@ -237,30 +243,244 @@ impl From<&'static str> for Rect {
     fn from(s: &'static str) -> Rect {
         let mut parts = s.split(',');
         let length = match parts.next() {
-            Some(val) => val.parse::<i32>().unwrap(),
-            None => 0,
+            Some(val) => val.parse::<f32>().unwrap(),
+            None => 0.0,
         };
         let width = match parts.next() {
-            Some(val) => val.parse::<i32>().unwrap(),
-            None => 0,
+            Some(val) => val.parse::<f32>().unwrap(),
+            None => 0.0,
         };
         let name = match parts.next() {
             Some(val) => val,
             None => "",
         };
-        Rect { length, width, name: &name }
+
+        Rect { length, width, name: &name}
+    }
+}
+
+
+//Exercise
+/*
+I need similar implementation for Circle and Triangle
+Besides Area, I need Perimeter and comparison on the basis of Perimeter
+In your submission, I need a comment against every line of code about what it is mearnt to achieve
+ */
+
+#[derive(Debug)]
+struct Circle { //a struct of type circle wuth 2 fields: radius and name
+    radius: f32,
+    name: &'static str,
+}
+
+impl Circle {
+    //default default() function. Will override derived default if any. 
+    fn default() -> Self {
+        Circle {
+            radius: 1.0,
+            name: "default_circle_name",
+        }
+    }
+
+    fn set_radius(&mut self, radius:f32) {
+        self.radius = radius;
+    }
+    fn get_radius(&self)-> f32 {
+        self.radius
+    }
+}
+
+
+impl Shape for Circle {
+    //Associated function used to create a new Shape
+    type ConcreteShape = (f32, & 'static str);  //will be used to define that circle has radius and name
+
+    fn new(dimensions: (f32, & 'static str)) -> Self { //used to instantiate a circle with unique values other than the default
+        Circle { radius:dimensions.0, name:dimensions.1 }
+    }
+
+    fn area(&self) -> f32 {
+        (self.radius.powf(2.0) * PI_VALUE).round() as f32  //rounds the final area answer and displays as a floating point number
+    }
+
+    fn perimeter(&self)-> f32 {
+        (2.0 * self.radius * PI_VALUE).round() as f32  //rounds the final perimeter answer and displays as a floating point number
+    }
+
+    fn set_name(&mut self, name: &'static str) {
+        self.name = name;
+    }
+
+    fn get_name(&self) -> &str {
+        self.name
+    }
+
+    
+} 
+
+
+//implement Partial Eq
+impl PartialEq for Circle {
+    fn eq(&self, other: &Self) -> bool { //eq for equals to
+        self.area() == other.area()
+    }
+
+    fn ne(&self, other: &Self) -> bool { //ne for not equals to
+        !self.eq(other)
+    }
+}
+
+impl PartialOrd for Circle {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.area().partial_cmp(&other.area())
+    }
+    // Provided methods
+    //fn lt(&self, other: &Rhs) -> bool { ... }
+    //fn le(&self, other: &Rhs) -> bool { ... }
+    //fn gt(&self, other: &Rhs) -> bool { ... }
+    //fn ge(&self, other: &Rhs) -> bool { ... }
+}
+
+//A conversion implementation into String
+//Expects a string slice with radius and name, separated by commas
+impl From<&'static str> for Circle {
+    fn from(s: &'static str) -> Circle {
+        let mut parts = s.split(',');
+        let radius = match parts.next() {
+            Some(val) => val.parse::<f32>().unwrap(),
+            None => 0.0,
+        };
+        
+        let name = match parts.next() {
+            Some(val) => val,
+            None => "",
+        };
+
+        Circle { radius, name: &name}
+    }
+}
+
+
+#[derive(Default, Debug, Clone)]
+struct Triangle { //a struct of type triangle with 2 fields: height and base
+    height: f32,
+    base: f32,
+    name: &'static str,
+}
+
+impl Triangle {  //define default methods that will be available for only Triangles
+    //default default() function. Will override derived default if any. 
+    fn default() -> Self {
+        Triangle {
+            height: 1.0,
+            base: 1.0,
+            name: "default_Triangle_name",
+        }
+    }
+
+    fn set_height(&mut self, height: f32) {
+        self.height = height;
+    }
+
+    fn get_height(&self) -> f32 {
+        self.height
+    }
+
+    fn set_base(&mut self, base: f32) {
+        self.base = base;
+    }
+
+    fn get_base(&self) -> f32 {
+        self.base
+    }
+}
+
+impl Shape for Triangle {
+    //Associated function used to create a new Shape
+    type ConcreteShape = (f32, f32, & 'static str); //will be used to define that Triangle has height, breadth, and name
+
+    fn new(dimensions: (f32, f32,& 'static str)) -> Self { //used to instantiate a Triangle with unique values other than the default
+        Triangle{
+            height: dimensions.0,
+            base: dimensions.1,
+            name: dimensions.2,
+        }
+    }
+
+    fn area(&self) -> f32 {
+        self.height * self.base
+    }
+
+    fn perimeter(&self)-> f32 {
+        2.0 * (self.height + self.base)
+    }
+
+    fn set_name(&mut self, name: &'static str) {
+        self.name = name;
+    }
+
+    fn get_name(&self) -> &str {
+        self.name
+    }
+
+}
+
+//implement Partial Eq
+impl PartialEq for Triangle {
+    fn eq(&self, other: &Self) -> bool {
+        self.area() == other.area()
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
+}
+
+impl PartialOrd for Triangle {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.area().partial_cmp(&other.area())
+    }
+    // Provided methods
+    //fn lt(&self, other: &Rhs) -> bool { ... }
+    //fn le(&self, other: &Rhs) -> bool { ... }
+    //fn gt(&self, other: &Rhs) -> bool { ... }
+    //fn ge(&self, other: &Rhs) -> bool { ... }
+}
+
+
+//A conversion implementation into String
+//Expects a string slice with height, base, name, separated by commas
+impl From<&'static str> for Triangle {
+    fn from(s: &'static str) -> Triangle {
+        let mut parts = s.split(',');
+        let height = match parts.next() {
+            Some(val) => val.parse::<f32>().unwrap(),
+            None => 0.0,
+        };
+        let base = match parts.next() {
+            Some(val) => val.parse::<f32>().unwrap(),
+            None => 0.0,
+        };
+        let name = match parts.next() {
+            Some(val) => val,
+            None => "",
+        };
+
+        Triangle { height, base, name: &name}
     }
 }
 
 pub fn run2() {
     let rectangle1 = Rect::default(); //use the default values of Rect
+    let circle1 = Circle::default(); //use the default values of Rect
+    let triangle1 = Triangle::default(); //use the default values of Rect
     
-    println!("{}", rectangle1.length);
-    println!("{}", rectangle1.width);
-    println!("{}", rectangle1.name);
+    println!("Length of rectangle1: {}", rectangle1.length);
+    println!("Width of the rectangle1:{}", rectangle1.width);
+    println!("Name of the rectangle1:{}", rectangle1.name);
 
-    let rectangle2 = Rect::new(1, 3, "Rectangle2"); //declare new rects with unique values
-    let rectangle3 = Rect::from("4,5,Rectangle3");
+    let rectangle2 = Rect::new((1.0, 3.0, "Rectangle2")); //declare new rects with unique values
+    let rectangle3 = Rect::from("4,5,Rectangle3,0");
 
     //Compare using PartialOrd
     let result1 = rectangle1.partial_cmp(&rectangle2);
@@ -276,10 +496,3 @@ pub fn run2() {
     let result4 = rectangle2.ne(&rectangle3);
     println!("result4 = {:?}", result4);
 }
-
-//Exercise
-/*
-I need similar implementation for Circle and Triangle
-Besides Area, I need Perimeter and comparison on the basis of Perimeter
-In your submission, I need a comment against every line of code about what it is mearnt to achieve
- */

@@ -39,7 +39,8 @@ fn estimate_2_dp(number:f32)->f32 {  //rounds numbers to 2 decimal places
 
 //This suppresses warnings when a given declared function is  not used.
 
-use core::cmp::Ordering; //Used dor comparison of value sizes 
+use core::cmp::Ordering;
+use std::f32::consts::PI; //Used dor comparison of value sizes 
 
 pub enum Comp { //Enumerate Comparison
     LessThan,
@@ -150,6 +151,17 @@ trait Shape {
 //compiler is clear about the availability of those values, as they are borrowed.
 //static will be available throughout the lifetime of the program.
 
+trait IntoRect {  //would be used in converting other shapes to rectangles
+    fn into_rect(&self) -> Rect;
+}
+trait IntoCircle {  //would be used in converting other shapes to circles
+    fn into_circle(&self) -> Circle;
+}
+
+trait IntoTriangle {  //would be used in converting other shapes to triangles
+    fn into_triangle(&self) -> Triangle;
+}
+
 ///Use Default to specify the availability of default instance creation without values passed for property
 #[derive(Default, Debug, Clone)]
 struct Rect {
@@ -221,7 +233,7 @@ impl PartialEq for Rect {
         self.area() == other.area() && self.perimeter() == other.perimeter()
     }
 
-    fn ne(&self, other: &Self) -> bool {
+    fn ne(&self, other: &Self) -> bool { // checks if 2 rectangles are not equals to each other
         !self.eq(other)
     }
 }
@@ -235,6 +247,28 @@ impl PartialOrd for Rect {
     //fn le(&self, other: &Rhs) -> bool { ... }
     //fn gt(&self, other: &Rhs) -> bool { ... }
     //fn ge(&self, other: &Rhs) -> bool { ... }
+}
+
+
+
+impl IntoCircle for Rect {  //convert the rectangle into a circle by comparing the areas and making r subject of formula i.e lh = PI*r^2
+    fn into_circle(&self) -> Circle {
+        Circle {
+            radius: ((self.length* self.width)/PI_VALUE).powf(0.5),
+            name: self.name
+        }
+    }
+}
+
+impl IntoTriangle for Rect {  //convert the rectangle into a triangle by comparing the areas and making r subject of formula i.e lh = (S*(S-a)*(S-b)*(S-c))^0.5
+    fn into_triangle(&self) -> Triangle {
+        Triangle {
+            a: ((16.0 *(self.length*self.width).powf(2.0))/3.0).powf(0.25),
+            b: ((16.0 *(self.length*self.width).powf(2.0))/3.0).powf(0.25),
+            c: ((16.0 *(self.length*self.width).powf(2.0))/3.0).powf(0.25),
+            name: self.name
+        }
+    }
 }
 
 
@@ -322,11 +356,11 @@ impl Shape for Circle {
 
 //implement Partial Eq
 impl PartialEq for Circle {
-    fn eq(&self, other: &Self) -> bool { //check area and perimeter equalties for circle
+    fn eq(&self, other: &Self) -> bool { //check area and perimeter equalities for circle
         self.area() == other.area() && self.perimeter() == other.perimeter()
     }
 
-    fn ne(&self, other: &Self) -> bool {
+    fn ne(&self, other: &Self) -> bool { // checks if 2 circles are not equals to each other
         !self.eq(other)
     }
 }
@@ -334,6 +368,27 @@ impl PartialEq for Circle {
 impl PartialOrd for Circle {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.area().partial_cmp(&other.area())
+    }
+}
+
+impl IntoRect for Circle{ //convert circle into a rectangle
+    fn into_rect(&self) -> Rect {
+        Rect { 
+            length: (PI_VALUE*self.radius.powf(2.0)).powf(0.5), 
+            width: (PI_VALUE*self.radius.powf(2.0)).powf(0.5),
+            name: self.name,
+        }
+    }
+}
+
+impl IntoTriangle for Circle {  //convert the circle into a triangle by comparing the areas and making r subject of formula i.e lh = (S*S-a*S-b*S-c)^0.5
+    fn into_triangle(&self) -> Triangle {
+        Triangle {
+            a: ((16.0*PI_VALUE.powf(2.0)*self.radius.powf(4.0))/3.0).powf(0.25),
+            b: ((16.0*PI_VALUE.powf(2.0)*self.radius.powf(4.0))/3.0).powf(0.25),
+            c: ((16.0*PI_VALUE.powf(2.0)*self.radius.powf(4.0))/3.0).powf(0.25),
+            name: self.name
+        }
     }
 }
 
@@ -359,9 +414,9 @@ impl From<&'static str> for Circle {
 
 #[derive(Default, Debug, Clone)]
 struct Triangle { //a struct of type triangle with 2 fields: height and base
-    a: f32,
-    b: f32,
-    c:f32,
+    a: f32, //first side
+    b: f32, //second side
+    c:f32, //third side
     name: &'static str,
 }
 
@@ -438,7 +493,7 @@ impl PartialEq for Triangle {
         self.area() == other.area() && self.perimeter() == other.perimeter()
     }
 
-    fn ne(&self, other: &Self) -> bool {
+    fn ne(&self, other: &Self) -> bool { // checks if 2 triangles are not equals to each other
         !self.eq(other)
     }
 }
@@ -446,6 +501,24 @@ impl PartialEq for Triangle {
 impl PartialOrd for Triangle {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         self.area().partial_cmp(&other.area())
+    }
+}
+
+impl IntoRect for Triangle{ //convert triangle to rectangle by making l and w subjects of formula by comparing the areas
+    fn into_rect(&self) -> Rect {
+        Rect { 
+            length: ((3.0 * self.a.powf(4.0))/16.0).powf(0.25), 
+            width: ((3.0 * self.a.powf(4.0))/16.0).powf(0.25), 
+            name: self.name,
+        }
+    }
+}
+impl IntoCircle for Triangle{ //convert triangle to rectangle by making radius subject of formula by comparing the areas
+    fn into_circle(&self) -> Circle {
+        Circle { 
+            radius: ((3.0*self.a.powf(4.0))/(16.0*PI_VALUE)).powf(0.25),
+            name: self.name,
+        }
     }
 }
 
@@ -525,7 +598,7 @@ pub fn run2() {
     let result5 = circle1.partial_cmp(&circle2);
     println!("result5 = {:?}", result5);
 
-    let result6 = circle1.ge(&circle2);
+    let result6 = circle1.ge(&circle2); //greater than or equals to
     println!("result6 = {:?}", result6);
 
     //Compare using PartialEq
@@ -549,4 +622,14 @@ pub fn run2() {
 
     let result12 = triangle2.ne(&triangle3);
     println!("result12= {:?}", result12);
+
+    //convert each shape to the others by equating area
+    println!("\ntriangle2 to circle = {:?}", triangle2.into_circle());
+    println!("triangle2 to rectangle = {:?}", triangle2.into_rect());
+
+    println!("\ncircle2 to triangle = {:?}", circle2.into_triangle());
+    println!("circle2 to rectangle = {:?}", circle2.into_rect());
+
+    println!("\nrectangle2 to triangle = {:?}", rectangle2.into_triangle());
+    println!("rectangle2 to circle = {:?}", rectangle2.into_circle());
 }

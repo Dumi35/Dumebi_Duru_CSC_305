@@ -13,9 +13,11 @@ pub fn run(){
         println!("{}", number);
     });
 
-    for element in MY_TUPLE2.0..= MY_TUPLE2.1{
-        println!("Element: {}", element);
-    }
+    /* for element in MY_TUPLE.0..= MY_TUPLE.4{
+        println!("Element: {:#?}", element);
+    } */
+
+    
 
     
     println!("{:?}",AGES);

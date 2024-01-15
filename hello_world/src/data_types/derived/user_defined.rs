@@ -40,7 +40,7 @@ fn estimate_2_dp(number:f32)->f32 {  //rounds numbers to 2 decimal places
 //This suppresses warnings when a given declared function is  not used.
 
 use core::cmp::Ordering;
-use std::f32::consts::PI; //Used dor comparison of value sizes 
+//use std::f32::consts::PI; //Used dor comparison of value sizes 
 
 pub enum Comp { //Enumerate Comparison
     LessThan,

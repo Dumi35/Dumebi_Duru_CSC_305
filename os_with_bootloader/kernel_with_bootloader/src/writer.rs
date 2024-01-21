@@ -2,11 +2,14 @@ mod constants;
 
 use bootloader_api::info::{FrameBufferInfo, PixelFormat};
 use constants::font_constants;
+
 use constants::font_constants::{BACKUP_CHAR, CHAR_RASTER_HEIGHT, FONT_WEIGHT};
+
 use core::{
     fmt::{self, Write},
     ptr,
 };
+
 
 use noto_sans_mono_bitmap::{get_raster, RasterizedChar};
 /// Additional vertical space between lines
@@ -88,6 +91,7 @@ impl FrameBufferWriter {
                 self.write_rendered_char(get_char_raster(c));
             }
         }
+        
     }
 
     /// Prints a rendered char into the framebuffer./// Updates self.x_pos.
@@ -118,16 +122,39 @@ impl FrameBufferWriter {
             .copy_from_slice(&color[..bytes_per_pixel]);
         let _ = unsafe { ptr::read_volatile(&self.framebuffer[byte_offset]) };
     }
+
+    pub fn move_text(&mut self, x_pos: usize, y_pos: usize) {
+        self.x_pos +=x_pos * font_constants::CHAR_RASTER_WIDTH;
+        self.y_pos +=y_pos * font_constants::CHAR_RASTER_HEIGHT.val();
+    }
+
+    fn draw_block_cursor(&mut self, block_width: usize, block_height: usize) {
+        for y in 0..block_height {
+            for x in 0..block_width {
+                // Use a consistent color for the block (e.g., white)
+                self.write_pixel(self.x_pos + x, self.y_pos + y, 255);
+            }
+        }
+        //self.x_pos += block_width + LETTER_SPACING;
+    } 
+    
 }
 
 unsafe impl Send for FrameBufferWriter {}
 unsafe impl Sync for FrameBufferWriter {}
 
+
+//works with writeln macro in kernel main.rs basically
 impl Write for FrameBufferWriter {
     fn write_str(&mut self, s: &str) -> fmt::Result {
+        //self.draw_block_cursor(4, font_constants::CHAR_RASTER_HEIGHT.val());
         for c in s.chars() {
-            self.write_char(c);
-        }
+            self.write_char(c); 
+        }        
+        
         Ok(())
     }
 }
+
+
+

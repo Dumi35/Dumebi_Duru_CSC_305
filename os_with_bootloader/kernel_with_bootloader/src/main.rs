@@ -8,6 +8,7 @@ use writer::FrameBufferWriter;
 
 //Use the entry_point macro to register the entry point function: bootloader_api::entry_point!(kernel_main)
 //optionally pass a custom config
+
 pub static BOOTLOADER_CONFIG: bootloader_api::BootloaderConfig = {
     let mut config = bootloader_api::BootloaderConfig::new_default();
     config.mappings.physical_memory = Some(Mapping::Dynamic);
@@ -23,14 +24,25 @@ fn my_entry_point(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     let buffer = boot_info.framebuffer.as_mut().unwrap().buffer_mut();
 
     let mut frame_buffer_writer = FrameBufferWriter::new(buffer, frame_buffer_info);
+
     use core::fmt::Write; //below requires this
-    writeln!(
-        frame_buffer_writer,
-        "Testing testing {} and {}",
-        1,
-        4.0 / 2.0
-    )
-    .unwrap();
+       
+    macro_rules! println {
+        ($($arg:expr),*)=>{
+            writeln!(
+                frame_buffer_writer,
+                $($arg),*
+            )
+            .unwrap();
+        } 
+    }
+    
+    println!("Fish {}",2);
+
+    //move cursor
+    frame_buffer_writer.move_text(25, 10);
+
+    println!("Fish {}",2);
 
     loop {
         hlt(); //stop x86_64 from being unnecessarily busy while looping

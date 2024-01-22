@@ -16,6 +16,8 @@ pub static BOOTLOADER_CONFIG: bootloader_api::BootloaderConfig = {
     config
 };
 
+
+
 bootloader_api::entry_point!(my_entry_point, config = &BOOTLOADER_CONFIG);
 
 fn my_entry_point(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
@@ -36,13 +38,28 @@ fn my_entry_point(boot_info: &'static mut bootloader_api::BootInfo) -> ! {
             .unwrap();
         } 
     }
+  
+    /* macro_rules! fbprintln {
+        ($frame_buffer:expr, $($arg:expr),*) => {{
+            let mut fb_writer = frame_buffer_writer;
     
+            // Iterate over each argument and write it to the framebuffer
+            $(
+                fb_writer.write_str($arg.to_string().as_str());
+            )*
+    
+            // Add a newline character to simulate the behavior of println
+            fb_writer.write_str("\n");
+        }};
+    }
+    
+    fbprintln!("Fish {}",2); */
     println!("Fish {}",2);
 
     //move cursor
     frame_buffer_writer.move_text(25, 10);
 
-    println!("Fish {}",2);
+    println!("Fish {} \n wow {}",2,34);
 
     loop {
         hlt(); //stop x86_64 from being unnecessarily busy while looping
